@@ -12,11 +12,12 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 
 @Component
-public class AuthProviderImpl implements AuthenticationProvider {
-    private PersonDetailsService personDetailsService;
+public class AuthenticationProviderImp implements AuthenticationProvider {
+
+    private final PersonDetailsService personDetailsService;
 
     @Autowired
-    public AuthProviderImpl(PersonDetailsService personDetailsService) {
+    public AuthenticationProviderImp(PersonDetailsService personDetailsService) {
         this.personDetailsService = personDetailsService;
     }
 
@@ -24,15 +25,14 @@ public class AuthProviderImpl implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String name = authentication.getName();
 
-        UserDetails personDetails = personDetailsService.loadUserByUsername(name);
-
         String password = authentication.getCredentials().toString();
 
-        if (!password.equals(personDetails.getPassword())) {
-            throw new BadCredentialsException("Password is not correct");
-        }
+        UserDetails userDetails = personDetailsService.loadUserByUserName(name);
 
-        return new UsernamePasswordAuthenticationToken(personDetails, password, Collections.emptyList());
+        if (!password.equals(userDetails.getPassword()))
+            throw new BadCredentialsException("AuthenticationProviderImp sad that your password " +
+                    "is not correct");
+        return new UsernamePasswordAuthenticationToken(userDetails, password, Collections.emptyList());
     }
 
     @Override
